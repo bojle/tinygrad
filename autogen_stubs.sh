@@ -103,6 +103,15 @@ generate_nvrtc() {
   python3 -c "import tinygrad.runtime.autogen.nvrtc"
 }
 
+generate_rknnrt() {
+  clang2py <rknn_api.h> -o $BASE/rknnrt.py -l <rknn_so>
+  sed -i "s\import ctypes\import ctypes, ctypes.util\g" $BASE/rknnrt.py
+  #sed -i "s\ctypes.CDLL('/usr/local/cuda/lib64/libnvrtc.so')\ctypes.CDLL(ctypes.util.find_library('nvrtc'))\g" $BASE/rknnrt.py
+  #sed -i "s\ctypes.CDLL('/usr/local/cuda/lib64/libnvJitLink.so')\ctypes.CDLL(ctypes.util.find_library('nvJitLink'))\g" $BASE/rknnrt.py
+  fixup $BASE/rknnrt.py
+  python3 -c "import tinygrad.runtime.autogen.rknnrt"
+}
+
 generate_nv() {
   NVKERN_COMMIT_HASH=d6b75a34094b0f56c2ccadf14e5d0bd515ed1ab6
   NVKERN_SRC=/tmp/open-gpu-kernel-modules-$NVKERN_COMMIT_HASH
@@ -562,6 +571,7 @@ elif [ "$1" == "pci" ]; then generate_pci
 elif [ "$1" == "vfio" ]; then generate_vfio
 elif [ "$1" == "webgpu" ]; then generate_webgpu
 elif [ "$1" == "libusb" ]; then generate_libusb
+elif [ "$1" == "rknnrt" ]; then generate_rknnrt
 elif [ "$1" == "all" ]; then generate_opencl; generate_hip; generate_comgr; generate_cuda; generate_nvrtc; generate_hsa; generate_kfd; generate_nv; generate_amd; generate_io_uring; generate_libc; generate_am; generate_webgpu
 else echo "usage: $0 <type>"
 fi
